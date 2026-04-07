@@ -7,7 +7,7 @@
     <style>
 * {
     box-sizing: border-box;
-    user-select: none; /* 避免拖动，输入框内仍可编辑 */
+    user-select: none;
 }
 
 body {
@@ -21,7 +21,6 @@ body {
     padding: 16px 12px 20px;
 }
 
-/* 整体游戏容器：列布局，键盘自然置于底部 */
 .game-full {
     max-width: 700px;
     width: 100%;
@@ -32,7 +31,6 @@ body {
     background: transparent;
 }
 
-/* 游戏主面板 (答题区) */
 .game-container {
     background: #fffef7;
     border-radius: 70px 70px 60px 60px;
@@ -42,15 +40,14 @@ body {
     transition: all 0.2s ease;
 }
 
-/* 头部信息栏：核心修复，改用flex布局保证不挤 */
 .game-header {
     display: flex;
-    justify-content: space-around; /* 替换space-between，小屏更稳 */
+    justify-content: space-around;
     background: #ffefc0;
     padding: 8px 12px;
     border-radius: 60px;
     margin-bottom: 20px;
-    flex-wrap: nowrap; /* 强制不换行，避免上下错位 */
+    flex-wrap: nowrap;
     gap: 8px;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.05);
 }
@@ -62,17 +59,17 @@ body {
     font-weight: bold;
     font-size: 1.1rem;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    display: flex; /* 替换inline-flex，保证布局稳定 */
+    display: flex;
     align-items: baseline;
     gap: 4px;
-    flex: 1; /* 两个盒子平分宽度，避免一宽一窄 */
-    justify-content: center; /* 内容居中，更美观 */
-    white-space: nowrap; /* 强制不换行，彻底解决文字错位 */
+    flex: 1;
+    justify-content: center;
+    white-space: nowrap;
 }
 
 .score-box span:first-child, .timer-box span:first-child {
     font-size: 0.85rem;
-    color: #b45f2b;
+    the color: #b45f2b;
 }
 
 .score-value, .timer-value {
@@ -82,7 +79,6 @@ body {
     font-family: monospace;
 }
 
-/* 汉字大卡片 */
 .hanzi-card {
     background: #fff2df;
     border-radius: 65px;
@@ -100,16 +96,6 @@ body {
     letter-spacing: 8px;
     display: inline-block;
     word-break: break-word;
-}
-
-.hint-area {
-    background: #ffe3b5;
-    border-radius: 50px;
-    padding: 6px 12px;
-    margin: 5px 0 10px;
-    font-size: 0.9rem;
-    color: #b45a2b;
-    display: inline-block;
 }
 
 .input-area {
@@ -138,7 +124,6 @@ body {
     background: #fffbf0;
 }
 
-/* 只保留重新开始按钮（独立干净） */
 .reset-button-wrapper {
     margin: 5px 0 0;
     text-align: center;
@@ -165,7 +150,6 @@ body {
     box-shadow: 0 1px 0 #b6491a;
 }
 
-/* 简洁反馈消息区域 (取代之前的message, 但保持必要提示) */
 .feedback {
     background: #fff0d0;
     margin-top: 15px;
@@ -184,7 +168,6 @@ body {
 .feedback-success { color: #2b7a3e; background: #e0ffe4; }
 .feedback-gameover { background: #fedba0; color: #b6491a; font-size: 1.1rem; }
 
-/* 虚拟键盘区域 (真实布局，手机端适配) */
 .keyboard-container {
     background: #f7e9d7;
     border-radius: 48px;
@@ -224,7 +207,6 @@ body {
     touch-action: manipulation;
 }
 
-/* 手机端适应：极致适配小屏 */
 @media (max-width: 560px) {
     .key {
         font-size: 1.3rem;
@@ -281,7 +263,6 @@ body {
     box-shadow: 0 1px 0 #b87a3a;
 }
 
-/* 功能键样式 */
 .key-func {
     background: #ffddb0;
     font-size: 1rem;
@@ -296,7 +277,6 @@ body {
     color: #7b3800;
 }
 
-/* 提交键醒目 */
 .key-submit {
     background: #6fbf4c;
     color: white;
@@ -321,7 +301,6 @@ body {
     justify-content: space-evenly;
 }
 
-/* 震动动画 */
 @keyframes shake {
     0% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -335,7 +314,6 @@ body {
 </head>
 <body>
 <div class="game-full">
-    <!-- 主游戏区 -->
     <div class="game-container">
         <div class="game-header">
             <div class="score-box">
@@ -354,35 +332,30 @@ body {
             <div class="current-hanzi" id="currentHanzi">?</div>
         </div>
 
-
-
         <div class="input-area">
             <input type="text" id="pinyinInput" class="pinyin-input" placeholder="输入拼音..." autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="none">
         </div>
-    <!-- 虚拟键盘区域 (真实布局，空格键为提交) -->
-    <div class="keyboard-container" id="virtualKeyboardContainer"></div>
-        <!-- 仅保留重新开始按钮，简洁 -->
+
+        <div class="keyboard-container" id="virtualKeyboardContainer"></div>
+
         <div class="reset-button-wrapper">
             <button class="btn-reset" id="resetBtn">🔄 重新开始</button>
         </div>
 
-        <!-- 反馈消息区域（代替原来的message区域，但风格精简） -->
         <div class="feedback" id="feedbackArea">
             ✨ 输入拼音，答对20题获胜
         </div>
     </div>
-
-
 </div>
 
 <script>
-    // ---------- 字库 (一年级常用字 + 小写拼音) ----------
+    // ---------- 字库：支持多音字 ----------
 const WORD_BANK = [
     // 第一张图
-    { word: "霜", pinyin: "shuang" }, { word: "吹", pinyin: "chui" }, { word: "落", pinyin: "luo" },
-    { word: "降", pinyin: "jiang" }, { word: "飘", pinyin: "piao" }, { word: "游", pinyin: "you" },
+    { word: "霜", pinyin: "shuang" }, { word: "吹", pinyin: "chui" }, { word: "落", pinyin: ["luo", "la", "lao"] },
+    { word: "降", pinyin: ["jiang", "xiang"] }, { word: "飘", pinyin: "piao" }, { word: "游", pinyin: "you" },
     { word: "池", pinyin: "chi" }, { word: "入", pinyin: "ru" }, { word: "氏", pinyin: "shi" },
-    { word: "什", pinyin: "shen" }, { word: "李", pinyin: "li" }, { word: "张", pinyin: "zhang" },
+    { word: "什", pinyin: ["shen", "shi"] }, { word: "李", pinyin: "li" }, { word: "张", pinyin: "zhang" },
     { word: "弓", pinyin: "gong" }, { word: "古", pinyin: "gu" }, { word: "胡", pinyin: "hu" },
     { word: "吴", pinyin: "wu" }, { word: "言", pinyin: "yan" }, { word: "孙", pinyin: "sun" },
     { word: "河", pinyin: "he" }, { word: "晴", pinyin: "qing" }, { word: "眼", pinyin: "yan" },
@@ -413,7 +386,7 @@ const WORD_BANK = [
     { word: "认", pinyin: "ren" }, { word: "连", pinyin: "lian" }, { word: "选", pinyin: "xuan" },
     { word: "圈", pinyin: "quan" }, { word: "涂", pinyin: "tu" }, { word: "填", pinyin: "tian" },
     { word: "试", pinyin: "shi" }, { word: "练", pinyin: "lian" }, { word: "玩", pinyin: "wan" },
-    { word: "得", pinyin: "de" }, { word: "急", pinyin: "ji" }, { word: "直", pinyin: "zhi" },
+    { word: "得", pinyin: ["de", "dei"] }, { word: "急", pinyin: "ji" }, { word: "直", pinyin: "zhi" },
     { word: "哭", pinyin: "ku" }, { word: "跟", pinyin: "gen" }, { word: "忽", pinyin: "hu" },
     { word: "然", pinyin: "ran" }, { word: "听", pinyin: "ting" }, { word: "喊", pinyin: "han" },
     { word: "快", pinyin: "kuai" }, { word: "己", pinyin: "ji" }, { word: "背", pinyin: "bei" },
@@ -421,11 +394,11 @@ const WORD_BANK = [
     // 第二张图
     { word: "只", pinyin: "zhi" }, { word: "很", pinyin: "hen" }, { word: "孤", pinyin: "gu" },
     { word: "单", pinyin: "dan" }, { word: "种", pinyin: "zhong" }, { word: "每", pinyin: "mei" },
-    { word: "都", pinyin: "dou" }, { word: "邻", pinyin: "lin" }, { word: "居", pinyin: "ju" },
+    { word: "都", pinyin: ["dou", "du"] }, { word: "邻", pinyin: "lin" }, { word: "居", pinyin: "ju" },
     { word: "叫", pinyin: "jiao" }, { word: "招", pinyin: "zhao" }, { word: "呼", pinyin: "hu" },
-    { word: "乐", pinyin: "le" }, { word: "怎", pinyin: "zen" }, { word: "独", pinyin: "du" },
+    { word: "乐", pinyin: ["le", "yue"] }, { word: "怎", pinyin: "zen" }, { word: "独", pinyin: "du" },
     { word: "跳", pinyin: "tiao" }, { word: "绳", pinyin: "sheng" }, { word: "当", pinyin: "dang" },
-    { word: "还", pinyin: "hai" }, { word: "乐", pinyin: "yue" }, { word: "得", pinyin: "dei" },
+    { word: "还", pinyin: ["hai", "huan"] }, 
     { word: "羽", pinyin: "yu" }, { word: "球", pinyin: "qiu" }, { word: "劲", pinyin: "jin" },
     { word: "轮", pinyin: "lun" }, { word: "排", pinyin: "pai" }, { word: "母", pinyin: "mu" },
     { word: "页", pinyin: "ye" }, { word: "止", pinyin: "zhi" }, { word: "斤", pinyin: "jin" },
@@ -437,22 +410,22 @@ const WORD_BANK = [
     { word: "勇", pinyin: "yong" }, { word: "讲", pinyin: "jiang" }, { word: "窗", pinyin: "chuang" },
     { word: "乱", pinyin: "luan" }, { word: "拉", pinyin: "la" }, { word: "样", pinyin: "yang" },
     { word: "笑", pinyin: "xiao" }, { word: "再", pinyin: "zai" }, { word: "睡", pinyin: "shui" },
-    { word: "觉", pinyin: "jiao" }, { word: "端", pinyin: "duan" }, { word: "粽", pinyin: "zong" },
+    { word: "觉", pinyin: ["jiao", "jue"] }, { word: "端", pinyin: "duan" }, { word: "粽", pinyin: "zong" },
     { word: "节", pinyin: "jie" }, { word: "总", pinyin: "zong" }, { word: "煮", pinyin: "zhu" },
     { word: "盼", pinyin: "pan" }, { word: "米", pinyin: "mi" }, { word: "枣", pinyin: "zao" },
     { word: "甜", pinyin: "tian" }, { word: "分", pinyin: "fen" }, { word: "鲜", pinyin: "xian" },
-    { word: "肉", pinyin: "rou" }, { word: "了", pinyin: "liao" }, { word: "了", pinyin: "le" }, { word: "册", pinyin: "ce" },
+    { word: "肉", pinyin: "rou" }, { word: "了", pinyin: ["le", "liao"] }, { word: "册", pinyin: "ce" },
     { word: "支", pinyin: "zhi" }, { word: "台", pinyin: "tai" }, { word: "电", pinyin: "dian" },
     { word: "视", pinyin: "shi" }, { word: "部", pinyin: "bu" }, { word: "机", pinyin: "ji" },
     { word: "衣", pinyin: "yi" }, { word: "裤", pinyin: "ku" }, { word: "被", pinyin: "bei" },
     { word: "物", pinyin: "wu" }, { word: "捉", pinyin: "zhuo" }, { word: "迷", pinyin: "mi" },
-    { word: "藏", pinyin: "cang" }, { word: "造", pinyin: "zao" }, { word: "蚂", pinyin: "ma" },
+    { word: "藏", pinyin: ["cang", "zang"] }, { word: "造", pinyin: "zao" }, { word: "蚂", pinyin: "ma" },
     { word: "蚁", pinyin: "yi" }, { word: "运", pinyin: "yun" }, { word: "食", pinyin: "shi" },
     { word: "粮", pinyin: "liang" }, { word: "房", pinyin: "fang" }, { word: "结", pinyin: "jie" },
     { word: "网", pinyin: "wang" }, { word: "圆", pinyin: "yuan" }, { word: "严", pinyin: "yan" },
     { word: "寒", pinyin: "han" }, { word: "酷", pinyin: "ku" }, { word: "暑", pinyin: "shu" },
     { word: "暖", pinyin: "nuan" }, { word: "晨", pinyin: "chen" }, { word: "细", pinyin: "xi" },
-    { word: "朝", pinyin: "zhao" }, { word: "霞", pinyin: "xia" }, { word: "夕", pinyin: "xi" },
+    { word: "朝", pinyin: ["zhao", "chao"] }, { word: "霞", pinyin: "xia" }, { word: "夕", pinyin: "xi" },
     { word: "杨", pinyin: "yang" }, { word: "香", pinyin: "xiang" }, { word: "操", pinyin: "cao" },
     { word: "拔", pinyin: "ba" }, { word: "拍", pinyin: "pai" }, { word: "跑", pinyin: "pao" },
     { word: "踢", pinyin: "ti" }, { word: "铃", pinyin: "ling" }, { word: "真", pinyin: "zhen" },
@@ -468,10 +441,10 @@ const WORD_BANK = [
     { word: "诗", pinyin: "shi" }, { word: "首", pinyin: "shou" }, { word: "偷", pinyin: "tou" },
     { word: "浮", pinyin: "fu" }, { word: "萍", pinyin: "ping" }, { word: "泉", pinyin: "quan" },
     { word: "惜", pinyin: "xi" }, { word: "照", pinyin: "zhao" }, { word: "柔", pinyin: "rou" },
-    { word: "荷", pinyin: "he" }, { word: "露", pinyin: "lu" }, { word: "角", pinyin: "jiao" },
+    { word: "荷", pinyin: "he" }, { word: "露", pinyin: "lu" }, { word: "角", pinyin: ["jiao", "jue"] },
     { word: "浪", pinyin: "lang" }, { word: "迈", pinyin: "mai" }, { word: "悄", pinyin: "qiao" },
-    { word: "泪", pinyin: "lei" }, { word: "次", pinyin: "ci" }, { word: "给", pinyin: "gei" },
-    { word: "壳", pinyin: "ke" }, { word: "虾", pinyin: "xia" }, { word: "装", pinyin: "zhuang" },
+    { word: "泪", pinyin: "lei" }, { word: "次", pinyin: "ci" }, { word: "给", pinyin: ["gei", "ji"] },
+    { word: "壳", pinyin: ["ke", "qiao"] }, { word: "虾", pinyin: "xia" }, { word: "装", pinyin: "zhuang" },
     { word: "像", pinyin: "xiang" }, { word: "淘", pinyin: "tao" }, { word: "娃", pinyin: "wa" },
 
     // 第三张图
@@ -491,7 +464,7 @@ const WORD_BANK = [
     { word: "盒", pinyin: "he" }, { word: "些", pinyin: "xie" }, { word: "此", pinyin: "ci" },
     { word: "仔", pinyin: "zi" }, { word: "检", pinyin: "jian" }, { word: "查", pinyin: "cha" },
     { word: "所", pinyin: "suo" }, { word: "伙", pinyin: "huo" }, { word: "伴", pinyin: "ban" },
-    { word: "钟", pinyin: "zhong" }, { word: "迟", pinyin: "chi" }, { word: "背", pinyin: "bei" },
+    { word: "钟", pinyin: "zhong" }, { word: "迟", pinyin: "chi" }, 
     { word: "灯", pinyin: "deng" }, { word: "等", pinyin: "deng" }, { word: "啊", pinyin: "a" },
     { word: "决", pinyin: "jue" }, { word: "定", pinyin: "ding" }, { word: "已", pinyin: "yi" },
     { word: "经", pinyin: "jing" }, { word: "位", pinyin: "wei" }, { word: "表", pinyin: "biao" },
@@ -512,12 +485,12 @@ const WORD_BANK = [
     { word: "帮", pinyin: "bang" }, { word: "害", pinyin: "hai" }, { word: "别", pinyin: "bie" },
     { word: "干", pinyin: "gan" }, { word: "惊", pinyin: "jing" }, { word: "奇", pinyin: "qi" },
     { word: "咕", pinyin: "gu" }, { word: "咚", pinyin: "dong" }, { word: "熟", pinyin: "shu" },
-    { word: "掉", pinyin: "diao" }, { word: "湖", pinyin: "hu" }, { word: "吓", pinyin: "xia" },
+    { word: "掉", pinyin: "diao" }, { word: "湖", pinyin: "hu" }, { word: "吓", pinyin: ["xia", "he"] },
     { word: "啦", pinyin: "la" }, { word: "鹿", pinyin: "lu" }, { word: "象", pinyin: "xiang" },
-    { word: "野", pinyin: "ye" }, { word: "拦", pinyin: "lan" }, { word: "哪", pinyin: "na" },
+    { word: "野", pinyin: "ye" }, { word: "拦", pinyin: "lan" }, { word: "哪", pinyin: ["na", "ne"] },
     { word: "那", pinyin: "na" }, { word: "领", pinyin: "ling" }, { word: "壁", pinyin: "bi" },
     { word: "借", pinyin: "jie" }, { word: "咬", pinyin: "yao" }, { word: "难", pinyin: "nan" },
-    { word: "哪", pinyin: "na" }, { word: "爬", pinyin: "pa" }, { word: "您", pinyin: "nin" },
+    { word: "爬", pinyin: "pa" }, { word: "您", pinyin: "nin" },
     { word: "拨", pinyin: "bo" }, { word: "赶", pinyin: "gan" }, { word: "摆", pinyin: "bai" },
     { word: "过", pinyin: "guo" }, { word: "孩", pinyin: "hai" }, { word: "转", pinyin: "zhuan" },
     { word: "吵", pinyin: "chao" }, { word: "现", pinyin: "xian" }, { word: "顶", pinyin: "ding" },
@@ -533,7 +506,6 @@ const WORD_BANK = [
     let timerSeconds = 0.0;
     let timerInterval = null;
 
-    // DOM 元素
     const currentHanziEl = document.getElementById('currentHanzi');
     const pinyinInput = document.getElementById('pinyinInput');
     const resetBtn = document.getElementById('resetBtn');
@@ -541,7 +513,6 @@ const WORD_BANK = [
     const questionCounterSpan = document.getElementById('questionCounter');
     const timerDisplaySpan = document.getElementById('timerDisplay');
 
-    // ---------- 游戏逻辑 ----------
     function generateRandomQuestions() {
         const shuffled = [...WORD_BANK];
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -569,11 +540,7 @@ const WORD_BANK = [
     }
 
     function updateQuestionCounter() {
-        if (!gameCompleted) {
-            questionCounterSpan.textContent = `${currentIndex}`;
-        } else {
-            questionCounterSpan.textContent = `${TOTAL_QUESTIONS}`;
-        }
+        questionCounterSpan.textContent = gameCompleted ? TOTAL_QUESTIONS : currentIndex;
     }
 
     function updateDisplayForCurrentQuestion() {
@@ -582,99 +549,81 @@ const WORD_BANK = [
         } else {
             currentHanziEl.textContent = "？";
         }
-        if (!gameCompleted && gameActive) {
-            pinyinInput.disabled = false;
-        } else if (gameCompleted) {
-            pinyinInput.disabled = true;
-        }
-        if (pinyinInput) pinyinInput.value = '';
+        pinyinInput.disabled = gameCompleted;
+        pinyinInput.value = '';
     }
 
     function setFeedback(msg, className = '') {
         feedbackArea.innerHTML = msg;
         feedbackArea.className = 'feedback';
-        if (className) {
-            feedbackArea.classList.add(className);
-        }
+        if (className) feedbackArea.classList.add(className);
     }
 
-    function showWrongMessage(expectedPinyin, userInput) {
-        setFeedback(`❌ “${userInput}” 不对哦！ 正确答案是“${expectedPinyin}”，再试试～`, 'feedback-error');
-        pinyinInput.style.transform = 'shake 0.2s ease-in-out 0s 2';
-        setTimeout(() => { pinyinInput.style.transform = ''; }, 400);
+    function showWrongMessage(expectedPinyinStr, userInput) {
+        setFeedback(`❌ “${userInput}” 不对哦！正确：${expectedPinyinStr}`, 'feedback-error');
         pinyinInput.classList.add('shake-input');
         setTimeout(() => pinyinInput.classList.remove('shake-input'), 400);
-        pinyinInput.focus();
+        // 答错也清空
+        pinyinInput.value = '';
     }
 
     function handleCorrect() {
-        const isLast = (currentIndex + 1 === TOTAL_QUESTIONS);
-        setFeedback(`✅ 完全正确！ “${currentGameQuestions[currentIndex].word}” 拼音很棒！`, 'feedback-success');
+        const isLast = currentIndex + 1 === TOTAL_QUESTIONS;
+        setFeedback(`✅ 正确！“${currentGameQuestions[currentIndex].word}”真棒！`, 'feedback-success');
 
         if (!isLast) {
             currentIndex++;
+            pinyinInput.value = '';
             updateDisplayForCurrentQuestion();
             updateQuestionCounter();
-            pinyinInput.value = '';
-            pinyinInput.focus();
-            setFeedback(`🎈 进入下一题！ 还剩 ${TOTAL_QUESTIONS - currentIndex} 题`, 'feedback-success');
-            gameActive = true;
+            setFeedback(`🎈 下一题！还剩 ${TOTAL_QUESTIONS - currentIndex} 题`, 'feedback-success');
         } else {
-            // 完成最后一题
             gameCompleted = true;
             gameActive = false;
             stopTimer();
             pinyinInput.disabled = true;
-            const totalTime = timerSeconds.toFixed(1);
-            setFeedback(`🏆 恭喜你完成全部20个汉字！ 🏆 总用时 ${totalTime} 秒！ 你真是拼音小英雄！ 🎉`, 'feedback-gameover');
+            setFeedback(`🏆 恭喜完成20题！用时 ${timerSeconds.toFixed(1)} 秒！🎉`, 'feedback-gameover');
             updateQuestionCounter();
-            pinyinInput.blur();
         }
     }
 
-    // 核心校验答案
+    // 答案校验（支持多音字）
     function checkAnswer() {
         if (gameCompleted) {
-            setFeedback("🏁 游戏已完成！点击「重新开始」继续挑战", 'feedback-error');
+            setFeedback("🏁 已完成！点重新开始挑战", 'feedback-error');
             return;
         }
-        if (!gameActive && !gameCompleted) gameActive = true;
-        if (currentIndex >= TOTAL_QUESTIONS) {
-            if (!gameCompleted) {
-                gameCompleted = true;
-                stopTimer();
-                setFeedback("🎉 已完成所有题目！", 'feedback-gameover');
-                pinyinInput.disabled = true;
-            }
-            return;
-        }
+        if (!gameActive) gameActive = true;
+        if (currentIndex >= TOTAL_QUESTIONS) return;
 
-        const currentItem = currentGameQuestions[currentIndex];
-        const correctPinyin = currentItem.pinyin.toLowerCase().trim();
-        let userPinyin = pinyinInput.value.trim();
-        userPinyin = userPinyin.toLowerCase().replace(/\s/g, '');
+        const item = currentGameQuestions[currentIndex];
+        const user = pinyinInput.value.trim().toLowerCase().replace(/\s+/g, '');
 
-        if (userPinyin === "") {
-            setFeedback("🐣 在框里输入拼音吧！试试看～", 'feedback-error');
-            pinyinInput.focus();
+        if (!user) {
+            setFeedback("🐣 请输入拼音", 'feedback-error');
             return;
         }
 
-        if (userPinyin === correctPinyin) {
+        let correctList = Array.isArray(item.pinyin)
+            ? item.pinyin.map(p => p.toLowerCase().trim())
+            : [item.pinyin.toLowerCase().trim()];
+
+        const isRight = correctList.includes(user);
+
+        if (isRight) {
             handleCorrect();
         } else {
-            showWrongMessage(correctPinyin, userPinyin);
-            pinyinInput.select();
+            const showPinyin = correctList.join(' 或 ');
+            showWrongMessage(showPinyin, user);
         }
     }
 
-    // ---------- 真实布局虚拟键盘 (字母行 + 删除/提交/清空) ----------
+    // ---------- 修复版键盘：输入顺序正常 ----------
     function buildRealKeyboard() {
         const container = document.getElementById('virtualKeyboardContainer');
         if (!container) return;
-        container.innerHTML = ''; 
+        container.innerHTML = '';
 
-        // QWERTY 布局
         const row1 = ['Q','W','E','R','T','Y','U','I','O','P'];
         const row2 = ['A','S','D','F','G','H','J','K','L'];
         const row3 = ['Z','X','C','V','B','N','M'];
@@ -688,19 +637,10 @@ const WORD_BANK = [
                 btn.className = 'key';
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    if (gameCompleted) {
-                        setFeedback("游戏已完成，重新开始后再输入吧", 'feedback-error');
-                        return;
-                    }
-                    pinyinInput.focus();
-                    const currentVal = pinyinInput.value;
-                    const start = pinyinInput.selectionStart ?? currentVal.length;
-                    const end = pinyinInput.selectionEnd ?? currentVal.length;
-                    const newVal = currentVal.substring(0, start) + key + currentVal.substring(end);
-                    pinyinInput.value = newVal;
-                    const newPos = start + 1;
-                    pinyinInput.setSelectionRange(newPos, newPos);
-                    pinyinInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    if (gameCompleted) return;
+                    pinyinInput.value += key.toLowerCase();
+                    const len = pinyinInput.value.length;
+                    pinyinInput.setSelectionRange(len, len);
                 });
                 rowDiv.appendChild(btn);
             });
@@ -711,122 +651,67 @@ const WORD_BANK = [
         container.appendChild(createRow(row2));
         container.appendChild(createRow(row3));
 
-        // 功能键行: 删除、提交、清空
         const funcRow = document.createElement('div');
         funcRow.className = 'keyboard-row row-special';
-        
+
+        // 删除
         const delBtn = document.createElement('button');
         delBtn.textContent = '⌫ 删除';
         delBtn.className = 'key key-func key-delete';
         delBtn.addEventListener('click', () => {
             if (gameCompleted) return;
-            pinyinInput.focus();
-            const currentVal = pinyinInput.value;
-            const start = pinyinInput.selectionStart ?? currentVal.length;
-            const end = pinyinInput.selectionEnd ?? currentVal.length;
-            if (start === end && start > 0) {
-                const newVal = currentVal.substring(0, start - 1) + currentVal.substring(end);
-                pinyinInput.value = newVal;
-                const newPos = start - 1;
-                pinyinInput.setSelectionRange(newPos, newPos);
-            } else if (start !== end) {
-                const newVal = currentVal.substring(0, start) + currentVal.substring(end);
-                pinyinInput.value = newVal;
-                pinyinInput.setSelectionRange(start, start);
-            }
-            pinyinInput.dispatchEvent(new Event('input', { bubbles: true }));
+            pinyinInput.value = pinyinInput.value.slice(0, -1);
         });
 
-        const submitKeyBtn = document.createElement('button');
-        submitKeyBtn.textContent = '✅ 提交';
-        submitKeyBtn.className = 'key key-submit';
-        submitKeyBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (gameCompleted) {
-                setFeedback("游戏已完成，请重新开始", 'feedback-error');
-                return;
-            }
-            checkAnswer();
-        });
+        // 提交
+        const submitBtn = document.createElement('button');
+        submitBtn.textContent = '✅ 提交';
+        submitBtn.className = 'key key-submit';
+        submitBtn.addEventListener('click', checkAnswer);
 
+        // 清空
         const clearBtn = document.createElement('button');
         clearBtn.textContent = '🗑️ 清空';
         clearBtn.className = 'key key-func key-clear';
         clearBtn.addEventListener('click', () => {
-            if (gameCompleted) return;
             pinyinInput.value = '';
-            pinyinInput.focus();
-            pinyinInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
 
         funcRow.appendChild(delBtn);
-        funcRow.appendChild(submitKeyBtn);
+        funcRow.appendChild(submitBtn);
         funcRow.appendChild(clearBtn);
         container.appendChild(funcRow);
-        
-        const tip = document.createElement('div');
-        tip.style.textAlign = 'center';
-        tip.style.fontSize = '0.7rem';
-        tip.style.marginTop = '12px';
-        tip.style.color = '#b46f3a';
-        tip.innerText = '💡 点按字母键，按【提交】或键盘回车键检查答案';
-        container.appendChild(tip);
     }
 
-    // ---------- 重置游戏 ----------
     function resetAndNewGame() {
         stopTimer();
         gameCompleted = false;
         gameActive = true;
-        timerSeconds = 0.0;
+        timerSeconds = 0;
         timerDisplaySpan.textContent = "0.0";
         currentGameQuestions = generateRandomQuestions();
         currentIndex = 0;
+        pinyinInput.value = '';
         updateDisplayForCurrentQuestion();
         updateQuestionCounter();
-        pinyinInput.value = '';
-        pinyinInput.disabled = false;
-        setFeedback("🎉 新的一局！一共20题，加油哟！", 'feedback-success');
+        setFeedback("🎉 新游戏开始！20题加油！", 'feedback-success');
         startTimer();
         pinyinInput.focus();
     }
 
-    function onEnterKey(e) {
+    // 回车提交
+    pinyinInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            if (!gameCompleted && gameActive) {
-                checkAnswer();
-            } else if (gameCompleted) {
-                setFeedback("游戏已完成，点「重新开始」继续游戏吧", 'feedback-error');
-            }
+            checkAnswer();
         }
-    }
-
-    // 实时将输入框内大写自动转小写
-    function setupInputTransform() {
-        pinyinInput.addEventListener('input', function(e) {
-            const raw = this.value;
-            const lowerRaw = raw.toLowerCase();
-            if (raw !== lowerRaw) {
-                const start = this.selectionStart;
-                const end = this.selectionEnd;
-                this.value = lowerRaw;
-                this.setSelectionRange(start, end);
-            }
-        });
-    }
+    });
 
     // 初始化
     function init() {
-        buildRealKeyboard();       // 真实布局键盘，提交键醒目
-        setupInputTransform();
+        buildRealKeyboard();
+        resetBtn.addEventListener('click', resetAndNewGame);
         resetAndNewGame();
-        resetBtn.addEventListener('click', () => {
-            resetAndNewGame();
-        });
-        pinyinInput.addEventListener('keypress', onEnterKey);
-        // 移动端适配：若点击重置后保证焦点
-        pinyinInput.addEventListener('touchstart', () => {});
     }
 
     init();
