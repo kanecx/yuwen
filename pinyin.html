@@ -338,13 +338,13 @@ body {
 
         <div class="keyboard-container" id="virtualKeyboardContainer"></div>
 
-        <div class="reset-button-wrapper">
-            <button class="btn-reset" id="resetBtn">🔄 重新开始</button>
-        </div>
-
+<div class="reset-button-wrapper" style="display: flex; justify-content: center; gap: 12px; margin-top: 10px;">
+    <button class="btn-reset" id="resetBtn">🔄 重新开始</button>
+    <button class="btn-reset" onclick="window.location.href='wrong-words.html'" style="background: #ff6b6b; box-shadow: 0 4px 0 #c73a3a;">📝 错题本</button>
+</div>
         <div class="feedback" id="feedbackArea">
             ✨ 输入拼音，答对20题获胜
-        </div>
+        </div> 
     </div>
 </div>
 
@@ -559,10 +559,34 @@ const WORD_BANK = [
         if (className) feedbackArea.classList.add(className);
     }
 
+    // ---------- 新增：记录错别字函数 ----------
+    function recordWrongWord(hanzi, wrongPinyin, correctPinyin) {
+        // 从localStorage获取已有记录
+        let wrongWords = JSON.parse(localStorage.getItem('wrongPinyinWords') || '[]');
+        // 去重（避免重复记录同一错误）
+        const isDuplicate = wrongWords.some(item => 
+            item.hanzi === hanzi && item.wrongPinyin === wrongPinyin
+        );
+        if (!isDuplicate) {
+            wrongWords.push({
+                hanzi,
+                wrongPinyin,
+                correctPinyin,
+                time: new Date().toLocaleString() // 记录时间
+            });
+            // 存回localStorage
+            localStorage.setItem('wrongPinyinWords', JSON.stringify(wrongWords));
+        }
+    }
+
+    // 修改showWrongMessage函数，添加记录逻辑
     function showWrongMessage(expectedPinyinStr, userInput) {
         setFeedback(`❌ “${userInput}” 不对哦！正确：${expectedPinyinStr}`, 'feedback-error');
         pinyinInput.classList.add('shake-input');
         setTimeout(() => pinyinInput.classList.remove('shake-input'), 400);
+        // 新增：记录错别字
+        const currentHanzi = currentGameQuestions[currentIndex].word;
+        recordWrongWord(currentHanzi, userInput, expectedPinyinStr);
         // 答错也清空
         pinyinInput.value = '';
     }
