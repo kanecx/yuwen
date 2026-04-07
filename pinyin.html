@@ -707,21 +707,56 @@ const WORD_BANK = [
         container.appendChild(funcRow);
     }
 
-    function resetAndNewGame() {
-        stopTimer();
-        gameCompleted = false;
-        gameActive = true;
-        timerSeconds = 0;
-        timerDisplaySpan.textContent = "0.0";
-        currentGameQuestions = generateRandomQuestions();
-        currentIndex = 0;
-        pinyinInput.value = '';
-        updateDisplayForCurrentQuestion();
-        updateQuestionCounter();
-        setFeedback("🎉 新游戏开始！20题加油！", 'feedback-success');
-        startTimer();
-        pinyinInput.focus();
+// ---------- 重置游戏（优先从错题本出题） ----------
+function resetAndNewGame() {
+    stopTimer();
+    gameCompleted = false;
+    gameActive = true;
+    timerSeconds = 0;
+    timerDisplaySpan.textContent = "0.0";
+    currentIndex = 0;
+
+    // 读取错题本
+    let wrongList = JSON.parse(localStorage.getItem('wrongPinyinWords') || '[]');
+    
+    // 去重：同一个字只出现一次
+    let wrongWordMap = {};
+    wrongList.forEach(item => {
+        let found = WORD_BANK.find(w => w.word === item.hanzi);
+        if (found) wrongWordMap[found.word] = found;
+    });
+    let wrongWords = Object.values(wrongWordMap);
+
+    // 组题库：优先错题，不够再从总字库补满 20 题
+    let gameWords = [];
+    if (wrongWords.length > 0) {
+        gameWords = [...wrongWords];
+        // 从总字库随机补充
+        let rest = [...WORD_BANK].filter(w => !gameWords.some(gw => gw.word === w.word));
+        while (gameWords.length < TOTAL_QUESTIONS && rest.length > 0) {
+            let rand = rest.splice(Math.floor(Math.random() * rest.length), 1)[0];
+            gameWords.push(rand);
+        }
+    } else {
+        // 无错题，随机出题
+        let shuffled = [...WORD_BANK].sort(() => Math.random() - 0.5);
+        gameWords = shuffled.slice(0, TOTAL_QUESTIONS);
     }
+
+   // ✅ 关键：把 错题 + 普通字 全部打乱顺序
+   gameWords = gameWords.sort(() => Math.random() - 0.5);
+
+    currentGameQuestions = gameWords;
+    updateDisplayForCurrentQuestion();
+    updateQuestionCounter();
+    setFeedback(wrongWords.length > 0 
+        ? "✅ 当前优先练习错题本！" 
+        : "🎉 新游戏开始！20题加油！", 
+        'feedback-success'
+    );
+    startTimer();
+    pinyinInput.focus();
+}
 
     // 回车提交
     pinyinInput.addEventListener('keypress', e => {
