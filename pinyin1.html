@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>拼音小英雄 | 带大写键盘的拼音识字游戏</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none; /* 避免拖动，但输入框仍可编辑 */
+        }
+
+        body {
+            background: linear-gradient(145deg, #f9e7b3 0%, #f5c98e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', 'Segoe UI', cursive, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 主游戏面板，使用网格布局支持键盘区域 */
+        .game-wrapper {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* 游戏核心区域 */
+        .game-container {
+            flex: 2;
+            min-width: 260px;
+            background: #fffef7;
+            border-radius: 80px 80px 70px 70px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2), inset 0 1px 4px rgba(255, 255, 255, 0.8);
+            overflow: hidden;
+            padding: 20px 25px 35px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        /* 虚拟键盘区域 */
+        .keyboard-panel {
+            flex: 1.2;
+            min-width: 280px;
+            background: #fff5e8;
+            border-radius: 60px;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+            padding: 20px 15px;
+            backdrop-filter: blur(2px);
+            border: 2px solid #ffd58c;
+        }
+
+        .keyboard-title {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #ffdca8;
+            display: inline-block;
+            width: 100%;
+            padding: 8px 0;
+            border-radius: 40px;
+            margin-bottom: 20px;
+            color: #b4571a;
+        }
+
+        .keyboard-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .key-btn {
+            background: #fecc8f;
+            border: none;
+            width: 55px;
+            height: 55px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            font-family: monospace;
+            color: #4a2a0e;
+            border-radius: 20px;
+            box-shadow: 0 5px 0 #b4621a;
+            cursor: pointer;
+            transition: 0.05s linear;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .key-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #b4621a;
+        }
+
+        .key-special {
+            background: #ffb05a;
+            width: auto;
+            padding: 0 18px;
+            font-size: 1.2rem;
+            text-transform: none;
+            box-shadow: 0 4px 0 #9b521a;
+        }
+
+        .key-delete {
+            background: #ff8c5a;
+            color: white;
+        }
+
+        .key-space {
+            background: #bdd4a0;
+            width: 120px;
+            font-size: 1rem;
+            box-shadow: 0 4px 0 #6e8f3e;
+        }
+
+        .row-break {
+            flex-basis: 100%;
+            height: 0;
+        }
+
+        @media (max-width: 780px) {
+            .game-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .key-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 1.5rem;
+            }
+            .key-space {
+                width: 100px;
+            }
+        }
+
+        /* 其他原有样式微调 */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            background: #ffefc0;
+            padding: 12px 20px;
+            border-radius: 60px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .score-box, .timer-box {
+            background: white;
+            border-radius: 40px;
+            padding: 8px 18px;
+            font-weight: bold;
+            font-size: 1.4rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .score-box span:first-child, .timer-box span:first-child {
+            font-size: 1rem;
+            color: #b45f2b;
+        }
+
+        .score-value, .timer-value {
+            font-size: 1.8rem;
+            color: #e67e22;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        .hanzi-card {
+            background: #fff2df;
+            border-radius: 70px;
+            margin: 15px 0 20px;
+            padding: 45px 20px;
+            box-shadow: inset 0 0 0 5px white, 0 15px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ffcd94;
+        }
+
+        .current-hanzi {
+            font-size: 8rem;
+            font-weight: 800;
+            color: #d45a1f;
+            text-shadow: 6px 6px 0 #ffdd99;
+            letter-spacing: 12px;
+            display: inline-block;
+        }
+
+        .hint-area {
+            background: #ffe3b5;
+            border-radius: 50px;
+            padding: 8px 15px;
+            margin: 5px 0 15px;
+            font-size: 1rem;
+            color: #b45a2b;
+            display: inline-block;
+        }
+
+        .input-area {
+            margin: 20px 0 15px;
+        }
+
+        .pinyin-input {
+            width: 85%;
+            max-width: 280px;
+            padding: 16px 20px;
+            font-size: 1.6rem;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            text-align: center;
+            border: 4px solid #ffbc6e;
+            border-radius: 60px;
+            background: white;
+            outline: none;
+            color: #7c3f12;
+            font-weight: bold;
+            transition: 0.2s;
+            letter-spacing: 1px;
+        }
+
+        .pinyin-input:focus {
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.3);
+            background: #fffbf0;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin: 15px 0 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            background: #ffbc6e;
+            color: #5a2e0e;
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: inherit;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 5px 0 #a05e1a;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #a05e1a;
+        }
+
+        .btn-primary {
+            background: #f3a712;
+            color: #2d1b0c;
+            box-shadow: 0 5px 0 #c16f1a;
+        }
+
+        .btn-reset {
+            background: #ff8c5a;
+            color: white;
+            box-shadow: 0 5px 0 #b6491a;
+        }
+
+        .message {
+            background: #fff0d0;
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #c75c1c;
+            min-height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .error-msg {
+            color: #e84118;
+            background: #ffe0db;
+        }
+
+        .success-msg {
+            color: #2b7a3e;
+            background: #e0ffe4;
+        }
+
+        .gameover-msg {
+            background: #fedba0;
+            color: #b6491a;
+            font-size: 1.3rem;
+        }
+
+        .progress-info {
+            margin-top: 12px;
+            font-size: 1rem;
+            background: #f2e2ca;
+            display: inline-block;
+            padding: 4px 20px;
+            border-radius: 40px;
+            color: #8b4b1a;
+        }
+    </style>
+</head>
+<body>
+<div class="game-wrapper">
+    <!-- 主游戏区 -->
+    <div class="game-container" id="gameApp">
+        <div class="game-header">
+            <div class="score-box">
+                <span>📖 进度</span>
+                <span class="score-value" id="questionCounter">0</span>
+                <span>/20</span>
+            </div>
+            <div class="timer-box">
+                <span>⏱️ 用时</span>
+                <span class="timer-value" id="timerDisplay">0.0</span>
+                <span>秒</span>
+            </div>
+        </div>
+
+        <div class="hanzi-card">
+            <div class="current-hanzi" id="currentHanzi">?</div>
+        </div>
+
+        <div class="hint-area">
+            💡 点击下方键盘 或 直接打字 (小写/大写均可，自动转小写比对)
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="pinyinInput" class="pinyin-input" placeholder="输入拼音..." autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="submitBtn">✔️ 检查答案</button>
+            <button class="btn btn-reset" id="resetBtn">🔄 重新开始</button>
+        </div>
+
+        <div class="message" id="messageArea">
+            🧸 输入拼音，答对20个汉字就胜利啦！
+        </div>
+        <div class="progress-info" id="extraInfo">⭐ 必须答对才能进入下一题 ⭐</div>
+    </div>
+
+    <!-- 大写字母虚拟键盘 (也支持小写显示，点击后输入大写但自动转小写处理) -->
+    <div class="keyboard-panel">
+        <div class="keyboard-title">🔤 拼音小键盘 (点按输入)</div>
+        <div class="keyboard-grid" id="virtualKeyboard">
+            <!-- 动态生成字母键 A-Z，以及功能键: 删除、空格、清空 -->
+        </div>
+        <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: #b45f2b;">
+            💡 键盘输入大写字母自动转为小写，不用担心大小写！
+        </div>
+    </div>
+</div>
+
+<script>
+    // ----------------------------- 内置字库 (汉字 + 小写拼音) -----------------------------
+    const WORD_BANK = [
+        { word: "人", pinyin: "ren" },
+        { word: "口", pinyin: "kou" },
+        { word: "手", pinyin: "shou" },
+        { word: "足", pinyin: "zu" },
+        { word: "日", pinyin: "ri" },
+        { word: "月", pinyin: "yue" },
+        { word: "水", pinyin: "shui" },
+        { word: "火", pinyin: "huo" },
+        { word: "山", pinyin: "shan" },
+        { word: "石", pinyin: "shi" },
+        { word: "田", pinyin: "tian" },
+        { word: "云", pinyin: "yun" },
+        { word: "风", pinyin: "feng" },
+        { word: "雨", pinyin: "yu" },
+        { word: "电", pinyin: "dian" },
+        { word: "木", pinyin: "mu" },
+        { word: "林", pinyin: "lin" },
+        { word: "天", pinyin: "tian" },
+        { word: "地", pinyin: "di" },
+        { word: "妈", pinyin: "ma" },
+        { word: "爸", pinyin: "ba" },
+        { word: "哥", pinyin: "ge" },
+        { word: "弟", pinyin: "di" },
+        { word: "花", pinyin: "hua" },
+        { word: "草", pinyin: "cao" },
+        { word: "鸟", pinyin: "niao" },
+        { word: "鱼", pinyin: "yu" },
+        { word: "虫", pinyin: "chong" },
+        { word: "马", pinyin: "ma" },
+        { word: "牛", pinyin: "niu" },
+        { word: "羊", pinyin: "yang" },
+        { word: "米", pinyin: "mi" },
+        { word: "大", pinyin: "da" },
+        { word: "小", pinyin: "xiao" },
+        { word: "多", pinyin: "duo" },
+        { word: "少", pinyin: "shao" },
+        { word: "上", pinyin: "shang" },
+        { word: "下", pinyin: "xia" },
+        { word: "来", pinyin: "lai" },
+        { word: "去", pinyin: "qu" }
+    ];
+
+    const TOTAL_QUESTIONS = 20;
+    let currentGameQuestions = [];    // 当前20个汉字对象
+    let currentIndex = 0;
+    let gameActive = true;
+    let gameCompleted = false;
+    let timerSeconds = 0.0;
+    let timerInterval = null;
+
+    // DOM 元素
+    const currentHanziEl = document.getElementById('currentHanzi');
+    const pinyinInput = document.getElementById('pinyinInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const messageArea = document.getElementById('messageArea');
+    const questionCounterSpan = document.getElementById('questionCounter');
+    const timerDisplaySpan = document.getElementById('timerDisplay');
+    const extraInfoDiv = document.getElementById('extraInfo');
+
+    // ---------- 辅助函数 ----------
+    function generateRandomQuestions() {
+        const shuffled = [...WORD_BANK];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, TOTAL_QUESTIONS);
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    function startTimer() {
+        if (timerInterval) stopTimer();
+        timerInterval = setInterval(() => {
+            if (!gameCompleted && gameActive) {
+                timerSeconds += 0.1;
+                timerDisplaySpan.textContent = timerSeconds.toFixed(1);
+            }
+        }, 100);
+    }
+
+    function updateQuestionCounter() {
+        if (!gameCompleted) {
+            questionCounterSpan.textContent = `${currentIndex}`;
+        } else {
+            questionCounterSpan.textContent = `${TOTAL_QUESTIONS}`;
+        }
+    }
+
+    function updateDisplayForCurrentQuestion() {
+        if (currentGameQuestions && currentIndex < currentGameQuestions.length) {
+            currentHanziEl.textContent = currentGameQuestions[currentIndex].word;
+        } else {
+            currentHanziEl.textContent = "？";
+        }
+        if (!gameCompleted && gameActive) {
+            pinyinInput.disabled = false;
+            submitBtn.disabled = false;
+        } else if (gameCompleted) {
+            pinyinInput.disabled = true;
+            submitBtn.disabled = true;
+        }
+        // 清空输入框（避免残留）
+        if (pinyinInput) pinyinInput.value = '';
+    }
+
+    function setMessage(msg, className = '') {
+        messageArea.innerHTML = msg;
+        messageArea.className = 'message';
+        if (className) {
+            messageArea.classList.add(className);
+        }
+    }
+
+    function showWrongMessage(expectedPinyin, userInput) {
+        setMessage(`❌ 拼音“${userInput}”不正确！ 正确答案是“${expectedPinyin}”，再试试看～`, 'error-msg');
+        pinyinInput.style.transform = 'shake 0.2s ease-in-out 0s 2';
+        setTimeout(() => { pinyinInput.style.transform = ''; }, 400);
+        if (!document.querySelector('#shakeKeyframe')) {
+            const style = document.createElement('style');
+            style.id = 'shakeKeyframe';
+            style.textContent = `@keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } 100% { transform: translateX(0); } } .shake-input { animation: shake 0.2s ease-in-out 0s 2; }`;
+            document.head.appendChild(style);
+        }
+        pinyinInput.classList.add('shake-input');
+        setTimeout(() => pinyinInput.classList.remove('shake-input'), 400);
+        pinyinInput.focus();
+    }
+
+    function handleCorrect() {
+        const isLast = (currentIndex + 1 === TOTAL_QUESTIONS);
+        setMessage(`✅ 完全正确！ “${currentGameQuestions[currentIndex].word}” 拼音很棒！`, 'success-msg');
+
+        if (!isLast) {
+            currentIndex++;
+            updateDisplayForCurrentQuestion();
+            updateQuestionCounter();
+            pinyinInput.value = '';
+            pinyinInput.focus();
+            setMessage(`🎈 进入下一题！ 还剩 ${TOTAL_QUESTIONS - currentIndex} 题`, 'success-msg');
+            gameActive = true;
+        } else {
+            // 完成最后一题
+            gameCompleted = true;
+            gameActive = false;
+            stopTimer();
+            pinyinInput.disabled = true;
+            submitBtn.disabled = true;
+            const totalTime = timerSeconds.toFixed(1);
+            setMessage(`🏆 恭喜你完成了全部20个汉字！ 🏆<br> ⏱️ 总用时 ${totalTime} 秒！ 你真是拼音小英雄！ 🎉`, 'gameover-msg');
+            extraInfoDiv.innerHTML = '🎯 游戏通关！点击【重新开始】可以再玩一局 🎯';
+            updateQuestionCounter();  // 显示20/20
+            pinyinInput.blur();
+        }
+    }
+
+    // 校验答案：自动将用户输入转为小写比较（支持大写键盘或大写输入）
+    function checkAnswer() {
+        if (gameCompleted) {
+            setMessage("🏁 游戏已经完成啦！点击「重新开始」继续挑战吧", 'error-msg');
+            return;
+        }
+        if (!gameActive) {
+            if (!gameCompleted) gameActive = true;
+            else return;
+        }
+        if (currentIndex >= TOTAL_QUESTIONS) {
+            if (!gameCompleted) {
+                gameCompleted = true;
+                stopTimer();
+                setMessage("🎉 已完成所有题目！", 'gameover-msg');
+                pinyinInput.disabled = true;
+                submitBtn.disabled = true;
+            }
+            return;
+        }
+
+        const currentItem = currentGameQuestions[currentIndex];
+        const correctPinyin = currentItem.pinyin.toLowerCase().trim();
+        let userPinyin = pinyinInput.value.trim();
+
+        // 关键: 将输入统一转为小写 (大写字母键盘点按也是大写，但这里直接转小写比对)
+        userPinyin = userPinyin.toLowerCase().replace(/\s/g, '');
+
+        if (userPinyin === "") {
+            setMessage("🐣 在框里输入拼音吧！试试看～", 'error-msg');
+            pinyinInput.focus();
+            return;
+        }
+
+        if (userPinyin === correctPinyin) {
+            handleCorrect();
+        } else {
+            showWrongMessage(correctPinyin, userPinyin);
+            pinyinInput.select();
+        }
+    }
+
+    // ---------- 虚拟键盘逻辑 ----------
+    function buildVirtualKeyboard() {
+        const keyboardContainer = document.getElementById('virtualKeyboard');
+        if (!keyboardContainer) return;
+        keyboardContainer.innerHTML = '';
+        // 26个大写字母 A-Z  (显示大写，点击后往输入框添加对应大写字母，但由于比对时会转小写，无影响)
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        // 第一行 A~P 紧凑排布
+        letters.forEach(letter => {
+            const btn = document.createElement('button');
+            btn.textContent = letter;
+            btn.className = 'key-btn';
+            btn.setAttribute('data-letter', letter);
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (gameCompleted) {
+                    setMessage("游戏已完成，请重新开始再输入", 'error-msg');
+                    return;
+                }
+                if (!gameActive && !gameCompleted) {
+                    // 允许输入，但游戏未完成状态（未激活的情况极少）
+                }
+                // 聚焦输入框，插入字母
+                pinyinInput.focus();
+                const currentVal = pinyinInput.value;
+                const start = pinyinInput.selectionStart || currentVal.length;
+                const end = pinyinInput.selectionEnd || currentVal.length;
+                const newVal = currentVal.substring(0, start) + letter + currentVal.substring(end);
+                pinyinInput.value = newVal;
+                // 设置光标位置
+                const newCursorPos = start + 1;
+                pinyinInput.setSelectionRange(newCursorPos, newCursorPos);
+                // 触发input事件（可选）
+                pinyinInput.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+            keyboardContainer.appendChild(btn);
+        });
+
+        // 添加功能键区域: 删除键(Backspace) 和 空格键 以及 清空键
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '⌫ 删除';
+        deleteBtn.className = 'key-btn key-special key-delete';
+        deleteBtn.addEventListener('click', () => {
+            if (gameCompleted) return;
+            pinyinInput.focus();
+            const currentVal = pinyinInput.value;
+            const start = pinyinInput.selectionStart;
+            const end = pinyinInput.selectionEnd;
+            if (start === end && start > 0) {
+                // 删除前一个字符
+                const newVal = currentVal.substring(0, start - 1) + currentVal.substring(end);
+                pinyinInput.value = newVal;
+                const newPos = start - 1;
+                pinyinInput.setSelectionRange(newPos, newPos);
+            } else if (start !== end) {
+                // 删除选中区域
+                const newVal = currentVal.substring(0, start) + currentVal.substring(end);
+                pinyinInput.value = newVal;
+                pinyinInput.setSelectionRange(start, start);
+            }
+            pinyinInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        const spaceBtn = document.createElement('button');
+        spaceBtn.textContent = '空格  ';
+        spaceBtn.className = 'key-btn key-special key-space';
+        spaceBtn.addEventListener('click', () => {
+            if (gameCompleted) return;
+            pinyinInput.focus();
+            const currentVal = pinyinInput.value;
+            const start = pinyinInput.selectionStart || currentVal.length;
+            const end = pinyinInput.selectionEnd || currentVal.length;
+            const newVal = currentVal.substring(0, start) + ' ' + currentVal.substring(end);
+            pinyinInput.value = newVal;
+            const newCursor = start + 1;
+            pinyinInput.setSelectionRange(newCursor, newCursor);
+            pinyinInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        const clearBtn = document.createElement('button');
+        clearBtn.textContent = '🗑️ 清空';
+        clearBtn.className = 'key-btn key-special';
+        clearBtn.addEventListener('click', () => {
+            if (gameCompleted) return;
+            pinyinInput.value = '';
+            pinyinInput.focus();
+            pinyinInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        // 辅助换行
+        const br = document.createElement('div');
+        br.className = 'row-break';
+        keyboardContainer.appendChild(br);
+        keyboardContainer.appendChild(deleteBtn);
+        keyboardContainer.appendChild(spaceBtn);
+        keyboardContainer.appendChild(clearBtn);
+    }
+
+    // 重置并开始新游戏
+    function resetAndNewGame() {
+        stopTimer();
+        gameCompleted = false;
+        gameActive = true;
+        timerSeconds = 0.0;
+        timerDisplaySpan.textContent = "0.0";
+        currentGameQuestions = generateRandomQuestions();
+        currentIndex = 0;
+        updateDisplayForCurrentQuestion();
+        updateQuestionCounter();
+        pinyinInput.value = '';
+        pinyinInput.disabled = false;
+        submitBtn.disabled = false;
+        setMessage("🎉 新的一局！一共20题，加油哟！", "success-msg");
+        extraInfoDiv.innerHTML = '⭐ 必须答对才能进入下一题 ⭐';
+        startTimer();
+        pinyinInput.focus();
+    }
+
+    function onEnterKey(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (!gameCompleted && gameActive) {
+                checkAnswer();
+            } else if (gameCompleted) {
+                setMessage("游戏已经完成，按「重新开始」继续游戏吧", 'error-msg');
+            }
+        }
+    }
+
+    // 初始化
+    function init() {
+        buildVirtualKeyboard();
+        resetAndNewGame();
+        submitBtn.addEventListener('click', () => {
+            if (!gameCompleted && gameActive) checkAnswer();
+            else if (gameCompleted) setMessage("🎮 游戏已完成，点击重新开始再玩一局", 'error-msg');
+            else checkAnswer();
+        });
+        resetBtn.addEventListener('click', () => {
+            resetAndNewGame();
+        });
+        pinyinInput.addEventListener('keypress', onEnterKey);
+        // 额外优化：手动输入时自动转小写显示（便于小朋友看到小写，但实际比对时也会统一小写）
+        pinyinInput.addEventListener('input', function(e) {
+            // 实时将输入的大写字母转为小写，让输入框内始终小写（更友好，同时也符合比对逻辑）
+            // 注意: 不强制光标位置错乱，使用巧妙替换
+            const raw = this.value;
+            const lowerRaw = raw.toLowerCase();
+            if (raw !== lowerRaw) {
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = lowerRaw;
+                // 调整光标位置（因为长度可能不变）
+                this.setSelectionRange(start, end);
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
