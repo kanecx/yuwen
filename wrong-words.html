@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>错别字管理 | 拼音小英雄</title>
     <style>
         * {
@@ -14,40 +14,45 @@
         body {
             background: linear-gradient(145deg, #f9e7b3 0%, #f5c98e 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px; /* 移动端减少左右内边距 */
         }
         .container {
             max-width: 800px;
+            width: 100%; /* 占满移动端宽度 */
             margin: 0 auto;
             background: #fffef7;
-            border-radius: 30px;
-            padding: 30px;
+            border-radius: 20px; /* 移动端圆角稍小更协调 */
+            padding: 20px 15px; /* 优化移动端内边距 */
             box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
         }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
             border-bottom: 2px solid #ffcd94;
+            flex-wrap: wrap; /* 防止标题和按钮换行时溢出 */
+            gap: 10px; /* 换行时增加间距 */
         }
         .title {
-            font-size: 2rem;
+            font-size: clamp(1.5rem, 5vw, 2rem); /* 响应式字体 */
             color: #d45a1f;
             text-shadow: 2px 2px 0 #ffdd99;
+            white-space: nowrap; /* 标题不换行 */
         }
         .back-btn {
             background: #ff8c5a;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 15px; /* 移动端按钮稍小 */
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: clamp(0.85rem, 3vw, 1rem); /* 响应式字体 */
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 0 #b6491a;
             transition: 0.05s linear;
+            white-space: nowrap; /* 按钮文字不换行 */
         }
         .back-btn:active {
             transform: translateY(2px);
@@ -56,7 +61,7 @@
         .controls {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .btn {
             padding: 8px 16px;
@@ -65,6 +70,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: clamp(0.8rem, 2.5vw, 1rem); /* 响应式字体 */
         }
         .clear-all {
             background: #e74c3c;
@@ -75,30 +81,31 @@
         }
         .empty-tip {
             text-align: center;
-            font-size: 1.2rem;
+            font-size: clamp(1rem, 3vw, 1.2rem); /* 响应式字体 */
             color: #7c3f12;
             padding: 40px 0;
         }
         .wrong-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
+            /* 移动端优先单列，屏幕足够宽时多列 */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px; /* 移动端间距稍小 */
         }
         .wrong-item {
             background: #fff2df;
-            border-radius: 20px;
-            padding: 15px;
+            border-radius: 15px; /* 移动端圆角稍小 */
+            padding: 12px; /* 移动端内边距优化 */
             border: 2px solid #ffcd94;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .hanzi {
-            font-size: 2.5rem;
+            font-size: clamp(2rem, 8vw, 2.5rem); /* 响应式字体，保证手机上足够大 */
             color: #d45a1f;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .info {
-            font-size: 1rem;
+            font-size: clamp(0.9rem, 2.5vw, 1rem); /* 响应式字体 */
             line-height: 1.5;
             color: #7c3f12;
         }
@@ -112,23 +119,46 @@
             color: #27ae60;
         }
         .time {
-            font-size: 0.8rem;
+            font-size: clamp(0.7rem, 2vw, 0.8rem); /* 响应式字体 */
             color: #95a5a6;
-            margin-top: 10px;
+            margin-top: 8px;
         }
         .item-controls {
             display: flex;
             justify-content: flex-end;
-            margin-top: 10px;
+            margin-top: 8px;
         }
         .delete-btn {
             background: #ffbc7a;
             color: #7b3800;
-            font-size: 0.8rem;
-            padding: 5px 10px;
+            font-size: clamp(0.75rem, 2vw, 0.8rem); /* 响应式字体 */
+            padding: 4px 8px; /* 移动端按钮优化 */
         }
         .delete-btn:hover {
             background: #ff8c5a;
+        }
+
+        /* 移动端触摸反馈优化 */
+        .btn:active, .delete-btn:active, .back-btn:active {
+            opacity: 0.8;
+        }
+
+        /* 适配极小屏幕（如320px宽度） */
+        @media (max-width: 360px) {
+            .wrong-list {
+                grid-template-columns: 1fr; /* 强制单列 */
+            }
+            .container {
+                padding: 15px 10px;
+            }
+            .header {
+                flex-direction: column; /* 极小屏幕下标题和按钮垂直排列 */
+                align-items: flex-start;
+            }
+            .back-btn {
+                align-self: stretch; /* 按钮占满宽度 */
+                text-align: center;
+            }
         }
     </style>
 </head>
