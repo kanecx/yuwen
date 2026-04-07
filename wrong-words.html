@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错别字管理 | 拼音小英雄</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Neue', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f9e7b3 0%, #f5c98e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fffef7;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ffcd94;
+        }
+        .title {
+            font-size: 2rem;
+            color: #d45a1f;
+            text-shadow: 2px 2px 0 #ffdd99;
+        }
+        .back-btn {
+            background: #ff8c5a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #b6491a;
+            transition: 0.05s linear;
+        }
+        .back-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #b6491a;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .clear-all {
+            background: #e74c3c;
+            color: white;
+        }
+        .clear-all:hover {
+            background: #c0392b;
+        }
+        .empty-tip {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #7c3f12;
+            padding: 40px 0;
+        }
+        .wrong-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .wrong-item {
+            background: #fff2df;
+            border-radius: 20px;
+            padding: 15px;
+            border: 2px solid #ffcd94;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .hanzi {
+            font-size: 2.5rem;
+            color: #d45a1f;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .info {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #7c3f12;
+        }
+        .info span {
+            font-weight: bold;
+        }
+        .wrong-pinyin {
+            color: #e74c3c;
+        }
+        .correct-pinyin {
+            color: #27ae60;
+        }
+        .time {
+            font-size: 0.8rem;
+            color: #95a5a6;
+            margin-top: 10px;
+        }
+        .item-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .delete-btn {
+            background: #ffbc7a;
+            color: #7b3800;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+        }
+        .delete-btn:hover {
+            background: #ff8c5a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">📝 错别字管理</h1>
+            <button class="back-btn" onclick="window.location.href='pinyin.html'">← 返回游戏</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn clear-all" id="clearAllBtn">🗑️ 清空所有记录</button>
+        </div>
+
+        <div id="wrongWordsList" class="wrong-list">
+            <!-- 动态渲染错别字列表 -->
+        </div>
+
+        <div id="emptyTip" class="empty-tip" style="display: none;">
+            暂无错别字记录 ✨
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const wrongWordsListEl = document.getElementById('wrongWordsList');
+        const emptyTipEl = document.getElementById('emptyTip');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+
+        // 初始化加载记录
+        function loadWrongWords() {
+            const wrongWords = JSON.parse(localStorage.getItem('wrongPinyinWords') || '[]');
+            // 清空列表
+            wrongWordsListEl.innerHTML = '';
+            
+            if (wrongWords.length === 0) {
+                emptyTipEl.style.display = 'block';
+                return;
+            }
+            
+            emptyTipEl.style.display = 'none';
+            // 渲染每条记录
+            wrongWords.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'wrong-item';
+                itemEl.innerHTML = `
+                    <div class="hanzi">${item.hanzi}</div>
+                    <div class="info">
+                        <div>错误拼音：<span class="wrong-pinyin">${item.wrongPinyin}</span></div>
+                        <div>正确拼音：<span class="correct-pinyin">${item.correctPinyin}</span></div>
+                    </div>
+                    <div class="time">记录时间：${item.time}</div>
+                    <div class="item-controls">
+                        <button class="btn delete-btn" data-index="${index}">删除</button>
+                    </div>
+                `;
+                wrongWordsListEl.appendChild(itemEl);
+            });
+
+            // 绑定删除按钮事件
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    deleteWrongWord(index);
+                });
+            });
+        }
+
+        // 删除单条记录
+        function deleteWrongWord(index) {
+            let wrongWords = JSON.parse(localStorage.getItem('wrongPinyinWords') || '[]');
+            wrongWords.splice(index, 1);
+            localStorage.setItem('wrongPinyinWords', JSON.stringify(wrongWords));
+            loadWrongWords(); // 重新加载列表
+        }
+
+        // 清空所有记录
+        clearAllBtn.addEventListener('click', function() {
+            if (confirm('确定要清空所有错别字记录吗？')) {
+                localStorage.removeItem('wrongPinyinWords');
+                loadWrongWords();
+            }
+        });
+
+        // 页面加载时初始化
+        window.addEventListener('load', loadWrongWords);
+    </script>
+</body>
+</html>
