@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>拼音小英雄 | 识字游戏 + 真实键盘布局 (空格提交)</title>
+    <title>拼音小英雄 | 极简识字游戏</title>
     <style>
         * {
             box-sizing: border-box;
-            user-select: none; /* 避免拖动，但输入框内仍可编辑 */
+            user-select: none; /* 避免拖动，输入框内仍可编辑 */
         }
 
         body {
@@ -21,7 +21,7 @@
             padding: 16px 12px 20px;
         }
 
-        /* 整体游戏容器：采用列布局，键盘固定在底部样式 */
+        /* 整体游戏容器：列布局，键盘自然置于底部 */
         .game-full {
             max-width: 700px;
             width: 100%;
@@ -32,7 +32,7 @@
             background: transparent;
         }
 
-        /* 游戏主面板 (上方答题区) */
+        /* 游戏主面板 (答题区) */
         .game-container {
             background: #fffef7;
             border-radius: 70px 70px 60px 60px;
@@ -110,7 +110,7 @@
         }
 
         .input-area {
-            margin: 12px 0 12px;
+            margin: 12px 0 8px;
         }
 
         .pinyin-input {
@@ -135,76 +135,53 @@
             background: #fffbf0;
         }
 
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 18px;
-            margin: 10px 0 8px;
-            flex-wrap: wrap;
+        /* 只保留重新开始按钮（独立干净） */
+        .reset-button-wrapper {
+            margin: 5px 0 0;
+            text-align: center;
         }
-
-        .btn {
+        .btn-reset {
             border: none;
-            background: #ffbc6e;
-            color: #5a2e0e;
-            padding: 10px 22px;
+            background: #ff8c5a;
+            color: white;
+            padding: 10px 28px;
             font-size: 1.1rem;
             font-weight: bold;
             font-family: inherit;
             border-radius: 50px;
             cursor: pointer;
             transition: 0.05s linear;
-            box-shadow: 0 4px 0 #a05e1a;
-            transform: translateY(-2px);
-        }
-
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #a05e1a;
-        }
-
-        .btn-primary {
-            background: #f3a712;
-            color: #2d1b0c;
-            box-shadow: 0 4px 0 #c16f1a;
-        }
-
-        .btn-reset {
-            background: #ff8c5a;
-            color: white;
             box-shadow: 0 4px 0 #b6491a;
+            transform: translateY(-2px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-reset:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #b6491a;
         }
 
-        .message {
+        /* 简洁反馈消息区域 (取代之前的message, 但保持必要提示) */
+        .feedback {
             background: #fff0d0;
             margin-top: 15px;
-            padding: 10px;
+            padding: 8px 12px;
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: bold;
             color: #c75c1c;
-            min-height: 60px;
+            min-height: 52px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
         }
+        .feedback-error { color: #e84118; background: #ffe0db; }
+        .feedback-success { color: #2b7a3e; background: #e0ffe4; }
+        .feedback-gameover { background: #fedba0; color: #b6491a; font-size: 1.1rem; }
 
-        .error-msg { color: #e84118; background: #ffe0db; }
-        .success-msg { color: #2b7a3e; background: #e0ffe4; }
-        .gameover-msg { background: #fedba0; color: #b6491a; font-size: 1.2rem; }
-
-        .progress-info {
-            margin-top: 8px;
-            font-size: 0.85rem;
-            background: #f2e2ca;
-            display: inline-block;
-            padding: 4px 18px;
-            border-radius: 40px;
-            color: #8b4b1a;
-        }
-
-        /* ---------- 虚拟键盘区域 (真实布局，手机端适配) ---------- */
+        /* 虚拟键盘区域 (真实布局，手机端适配) */
         .keyboard-container {
             background: #f7e9d7;
             border-radius: 48px;
@@ -244,7 +221,7 @@
             touch-action: manipulation;
         }
 
-        /* 手机端适应调整大小 */
+        /* 手机端适应 */
         @media (max-width: 560px) {
             .key {
                 font-size: 1.3rem;
@@ -294,7 +271,7 @@
             color: #7b3800;
         }
 
-        /* 空格键改为提交样式，更醒目 */
+        /* 提交键醒目 */
         .key-submit {
             background: #6fbf4c;
             color: white;
@@ -315,7 +292,6 @@
             background: #ffac6a;
         }
 
-        /* 适应大键盘最后一排特殊宽度 */
         .row-special {
             justify-content: space-evenly;
         }
@@ -353,29 +329,25 @@
             <div class="current-hanzi" id="currentHanzi">?</div>
         </div>
 
-        <div class="hint-area">
-            🎤 点击下方键盘或直接打字 (自动转小写) | 空格键提交答案
-        </div>
+
 
         <div class="input-area">
             <input type="text" id="pinyinInput" class="pinyin-input" placeholder="输入拼音..." autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="none">
         </div>
-
-        <div class="button-group">
-            <button class="btn btn-primary" id="submitBtn">✔️ 检查答案</button>
-            <button class="btn btn-reset" id="resetBtn">🔄 重新开始</button>
+    <!-- 虚拟键盘区域 (真实布局，空格键为提交) -->
+    <div class="keyboard-container" id="virtualKeyboardContainer"></div>
+        <!-- 仅保留重新开始按钮，简洁 -->
+        <div class="reset-button-wrapper">
+            <button class="btn-reset" id="resetBtn">🔄 重新开始</button>
         </div>
 
-        <div class="message" id="messageArea">
-            🧸 输入拼音，答对20个汉字就胜利啦！
+        <!-- 反馈消息区域（代替原来的message区域，但风格精简） -->
+        <div class="feedback" id="feedbackArea">
+            ✨ 输入拼音，答对20题获胜
         </div>
-        <div class="progress-info" id="extraInfo">⭐ 必须答对才能进入下一题 ⭐</div>
     </div>
 
-    <!-- 虚拟键盘区域 (类似真实键盘布局，空格改为提交) -->
-    <div class="keyboard-container" id="virtualKeyboardContainer">
-        <!-- 动态生成键盘行: 三行字母 + 功能行（删除、提交、清空） -->
-    </div>
+
 </div>
 
 <script>
@@ -408,12 +380,10 @@
     // DOM 元素
     const currentHanziEl = document.getElementById('currentHanzi');
     const pinyinInput = document.getElementById('pinyinInput');
-    const submitBtn = document.getElementById('submitBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const messageArea = document.getElementById('messageArea');
+    const feedbackArea = document.getElementById('feedbackArea');
     const questionCounterSpan = document.getElementById('questionCounter');
     const timerDisplaySpan = document.getElementById('timerDisplay');
-    const extraInfoDiv = document.getElementById('extraInfo');
 
     // ---------- 游戏逻辑 ----------
     function generateRandomQuestions() {
@@ -458,25 +428,22 @@
         }
         if (!gameCompleted && gameActive) {
             pinyinInput.disabled = false;
-            submitBtn.disabled = false;
         } else if (gameCompleted) {
             pinyinInput.disabled = true;
-            submitBtn.disabled = true;
         }
-        // 清空输入框，准备新输入
         if (pinyinInput) pinyinInput.value = '';
     }
 
-    function setMessage(msg, className = '') {
-        messageArea.innerHTML = msg;
-        messageArea.className = 'message';
+    function setFeedback(msg, className = '') {
+        feedbackArea.innerHTML = msg;
+        feedbackArea.className = 'feedback';
         if (className) {
-            messageArea.classList.add(className);
+            feedbackArea.classList.add(className);
         }
     }
 
     function showWrongMessage(expectedPinyin, userInput) {
-        setMessage(`❌ 拼音“${userInput}”不正确！ 正确答案是“${expectedPinyin}”，再试试看～`, 'error-msg');
+        setFeedback(`❌ “${userInput}” 不对哦！ 正确答案是“${expectedPinyin}”，再试试～`, 'feedback-error');
         pinyinInput.style.transform = 'shake 0.2s ease-in-out 0s 2';
         setTimeout(() => { pinyinInput.style.transform = ''; }, 400);
         pinyinInput.classList.add('shake-input');
@@ -486,7 +453,7 @@
 
     function handleCorrect() {
         const isLast = (currentIndex + 1 === TOTAL_QUESTIONS);
-        setMessage(`✅ 完全正确！ “${currentGameQuestions[currentIndex].word}” 拼音很棒！`, 'success-msg');
+        setFeedback(`✅ 完全正确！ “${currentGameQuestions[currentIndex].word}” 拼音很棒！`, 'feedback-success');
 
         if (!isLast) {
             currentIndex++;
@@ -494,7 +461,7 @@
             updateQuestionCounter();
             pinyinInput.value = '';
             pinyinInput.focus();
-            setMessage(`🎈 进入下一题！ 还剩 ${TOTAL_QUESTIONS - currentIndex} 题`, 'success-msg');
+            setFeedback(`🎈 进入下一题！ 还剩 ${TOTAL_QUESTIONS - currentIndex} 题`, 'feedback-success');
             gameActive = true;
         } else {
             // 完成最后一题
@@ -502,19 +469,17 @@
             gameActive = false;
             stopTimer();
             pinyinInput.disabled = true;
-            submitBtn.disabled = true;
             const totalTime = timerSeconds.toFixed(1);
-            setMessage(`🏆 恭喜你完成了全部20个汉字！ 🏆<br> ⏱️ 总用时 ${totalTime} 秒！ 你真是拼音小英雄！ 🎉`, 'gameover-msg');
-            extraInfoDiv.innerHTML = '🎯 游戏通关！点击【重新开始】再玩一局 🎯';
+            setFeedback(`🏆 恭喜你完成全部20个汉字！ 🏆 总用时 ${totalTime} 秒！ 你真是拼音小英雄！ 🎉`, 'feedback-gameover');
             updateQuestionCounter();
             pinyinInput.blur();
         }
     }
 
-    // 核心校验答案 (对外暴露)
+    // 核心校验答案
     function checkAnswer() {
         if (gameCompleted) {
-            setMessage("🏁 游戏已经完成啦！点击「重新开始」继续挑战吧", 'error-msg');
+            setFeedback("🏁 游戏已完成！点击「重新开始」继续挑战", 'feedback-error');
             return;
         }
         if (!gameActive && !gameCompleted) gameActive = true;
@@ -522,9 +487,8 @@
             if (!gameCompleted) {
                 gameCompleted = true;
                 stopTimer();
-                setMessage("🎉 已完成所有题目！", 'gameover-msg');
+                setFeedback("🎉 已完成所有题目！", 'feedback-gameover');
                 pinyinInput.disabled = true;
-                submitBtn.disabled = true;
             }
             return;
         }
@@ -532,11 +496,10 @@
         const currentItem = currentGameQuestions[currentIndex];
         const correctPinyin = currentItem.pinyin.toLowerCase().trim();
         let userPinyin = pinyinInput.value.trim();
-        // 转小写比较，支持键盘大写/混合大小写
         userPinyin = userPinyin.toLowerCase().replace(/\s/g, '');
 
         if (userPinyin === "") {
-            setMessage("🐣 在框里输入拼音吧！试试看～", 'error-msg');
+            setFeedback("🐣 在框里输入拼音吧！试试看～", 'feedback-error');
             pinyinInput.focus();
             return;
         }
@@ -549,30 +512,28 @@
         }
     }
 
-    // ---------- 真实布局虚拟键盘 (三行字母 + 功能行：删除 / 提交(原空格) / 清空) ----------
+    // ---------- 真实布局虚拟键盘 (字母行 + 删除/提交/清空) ----------
     function buildRealKeyboard() {
         const container = document.getElementById('virtualKeyboardContainer');
         if (!container) return;
         container.innerHTML = ''; 
 
-        // 键盘布局 (标准 QWERTY)
+        // QWERTY 布局
         const row1 = ['Q','W','E','R','T','Y','U','I','O','P'];
         const row2 = ['A','S','D','F','G','H','J','K','L'];
         const row3 = ['Z','X','C','V','B','N','M'];
 
-        // 创建字母行函数
-        function createRow(keysArray, rowClass = 'keyboard-row') {
+        function createRow(keysArray) {
             const rowDiv = document.createElement('div');
-            rowDiv.className = rowClass;
+            rowDiv.className = 'keyboard-row';
             keysArray.forEach(key => {
                 const btn = document.createElement('button');
                 btn.textContent = key;
                 btn.className = 'key';
-                btn.setAttribute('data-letter', key);
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (gameCompleted) {
-                        setMessage("游戏已完成，请重新开始再输入", 'error-msg');
+                        setFeedback("游戏已完成，重新开始后再输入吧", 'feedback-error');
                         return;
                     }
                     pinyinInput.focus();
@@ -590,18 +551,14 @@
             return rowDiv;
         }
 
-        // 第一行
         container.appendChild(createRow(row1));
-        // 第二行
         container.appendChild(createRow(row2));
-        // 第三行
         container.appendChild(createRow(row3));
 
-        // 功能键行: 删除键、提交键(原空格改为提交)、清空键
+        // 功能键行: 删除、提交、清空
         const funcRow = document.createElement('div');
         funcRow.className = 'keyboard-row row-special';
         
-        // 1. 删除键
         const delBtn = document.createElement('button');
         delBtn.textContent = '⌫ 删除';
         delBtn.className = 'key key-func key-delete';
@@ -624,21 +581,18 @@
             pinyinInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
 
-        // 2. 提交键 (原来空格的位置，现改为“提交答案”)
         const submitKeyBtn = document.createElement('button');
         submitKeyBtn.textContent = '✅ 提交';
         submitKeyBtn.className = 'key key-submit';
         submitKeyBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (gameCompleted) {
-                setMessage("游戏已完成，请重新开始再提交", 'error-msg');
+                setFeedback("游戏已完成，请重新开始", 'feedback-error');
                 return;
             }
-            // 调用检查答案函数
             checkAnswer();
         });
 
-        // 3. 清空键
         const clearBtn = document.createElement('button');
         clearBtn.textContent = '🗑️ 清空';
         clearBtn.className = 'key key-func key-clear';
@@ -654,13 +608,12 @@
         funcRow.appendChild(clearBtn);
         container.appendChild(funcRow);
         
-        // 额外提示小文字（手机友好）
         const tip = document.createElement('div');
         tip.style.textAlign = 'center';
         tip.style.fontSize = '0.7rem';
         tip.style.marginTop = '12px';
         tip.style.color = '#b46f3a';
-        tip.innerText = '💡 点按字母键输入，按【提交】或键盘空格键（虚拟）检查答案';
+        tip.innerText = '💡 点按字母键，按【提交】或键盘回车键检查答案';
         container.appendChild(tip);
     }
 
@@ -677,9 +630,7 @@
         updateQuestionCounter();
         pinyinInput.value = '';
         pinyinInput.disabled = false;
-        submitBtn.disabled = false;
-        setMessage("🎉 新的一局！一共20题，加油哟！", "success-msg");
-        extraInfoDiv.innerHTML = '⭐ 必须答对才能进入下一题 ⭐';
+        setFeedback("🎉 新的一局！一共20题，加油哟！", 'feedback-success');
         startTimer();
         pinyinInput.focus();
     }
@@ -690,12 +641,12 @@
             if (!gameCompleted && gameActive) {
                 checkAnswer();
             } else if (gameCompleted) {
-                setMessage("游戏已经完成，按「重新开始」继续游戏吧", 'error-msg');
+                setFeedback("游戏已完成，点「重新开始」继续游戏吧", 'feedback-error');
             }
         }
     }
 
-    // 实时将输入框内的大写字母自动转为小写（更友好）
+    // 实时将输入框内大写自动转小写
     function setupInputTransform() {
         pinyinInput.addEventListener('input', function(e) {
             const raw = this.value;
@@ -711,19 +662,15 @@
 
     // 初始化
     function init() {
-        buildRealKeyboard();       // 真实布局键盘在下，空格改为提交按钮
+        buildRealKeyboard();       // 真实布局键盘，提交键醒目
         setupInputTransform();
         resetAndNewGame();
-        submitBtn.addEventListener('click', () => {
-            if (!gameCompleted && gameActive) checkAnswer();
-            else if (gameCompleted) setMessage("🎮 游戏已完成，点击重新开始再玩一局", 'error-msg');
-            else checkAnswer();
-        });
         resetBtn.addEventListener('click', () => {
             resetAndNewGame();
         });
         pinyinInput.addEventListener('keypress', onEnterKey);
-        // 移动端如果使用系统键盘，回车也会触发提交；无冲突
+        // 移动端适配：若点击重置后保证焦点
+        pinyinInput.addEventListener('touchstart', () => {});
     }
 
     init();
