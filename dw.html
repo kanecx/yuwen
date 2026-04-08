@@ -132,20 +132,37 @@
             100% { transform: rotate(360deg); }
         }
         
-        .map-placeholder {
+        .map-container {
             background: #e9ecef;
-            height: 200px;
             border-radius: 12px;
+            overflow: hidden;
+            margin-top: 16px;
+            position: relative;
+            min-height: 200px;
+        }
+        
+        .map-placeholder {
+            background: #f8f9fa;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #666;
-            margin-top: 16px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>');
-            background-repeat: no-repeat;
-            background-position: center 60px;
-            background-size: 40px;
-            padding-top: 100px;
+            color: #999;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .map-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .map-link {
+            display: inline-block;
+            margin-top: 12px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 12px;
         }
         
         .footer {
@@ -208,8 +225,10 @@
                 <pre id="sendData">等待获取定位...</pre>
             </div>
             
-            <div id="mapContainer" class="map-placeholder">
-                地图预览区域
+            <div id="mapContainer" class="map-container">
+                <div class="map-placeholder">
+                    🌍 获取定位后显示地图预览
+                </div>
             </div>
         </div>
         
@@ -233,9 +252,7 @@
 
     <script>
         // 模拟后端API地址（实际使用时替换成你的后端地址）
-        // 这里使用免费的测试API来演示，你也可以换成自己的后端
         const BACKEND_API = 'https://jsonplaceholder.typicode.com/posts'; // 演示用的测试API
-        // 实际使用时替换成：const BACKEND_API = 'https://your-domain.com/api/location';
         
         let currentLocation = null;
         
@@ -245,7 +262,6 @@
             const statusClass = type === 'success' ? 'status-success' : (type === 'error' ? 'status-error' : 'status-info');
             statusDiv.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
             
-            // 5秒后自动清除状态消息
             setTimeout(() => {
                 if (statusDiv.innerHTML.includes(message)) {
                     statusDiv.innerHTML = '';
@@ -261,7 +277,6 @@
             document.getElementById('method').textContent = location.method || '--';
             document.getElementById('timestamp').textContent = location.timestamp || '--';
             
-            // 更新发送到后端的数据预览
             const sendData = {
                 latitude: location.latitude,
                 longitude: location.longitude,
@@ -273,32 +288,46 @@
             };
             document.getElementById('sendData').textContent = JSON.stringify(sendData, null, 2);
             
-            // 更新地图预览（使用静态地图API）
             if (location.latitude && location.longitude) {
                 updateMapPreview(location.latitude, location.longitude);
             }
         }
         
-        // 更新地图预览（使用OpenStreetMap的静态图，实际可用高德、百度等）
+        // 使用高德地图静态API显示地图预览
         function updateMapPreview(lat, lng) {
             const mapContainer = document.getElementById('mapContainer');
-            // 这里使用OpenStreetMap的静态图预览，实际可以用高德地图API
+            
+            // 方案1: 使用高德地图静态图API（需要申请key，但提供基础功能）
+            // 高德地图静态图API: https://lbs.amap.com/api/webservice/guide/api/staticmaps
+            // 注意：生产环境需要申请高德地图Key，这里用OpenStreetMap作为备选
+            
+            // 方案2: 使用OpenStreetMap的静态图（更稳定，无需key）
+            const staticMapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=600x300&maptype=mapnik&markers=${lat},${lng},lightblue1`;
+            
+            // 方案3: 使用百度地图静态图（备选）
+            // const baiduMapUrl = `http://api.map.baidu.com/staticimage/v2?ak=你的AK&center=${lng},${lat}&width=600&height=300&zoom=15&markers=${lng},${lat}`;
+            
             mapContainer.innerHTML = `
-                <div style="text-align: center; padding: 10px;">
-                    <div style="margin-bottom: 8px; font-size: 12px; color: #666;">📍 位置预览</div>
-                    <iframe 
-                        width="100%" 
-                        height="180" 
-                        frameborder="0" 
-                        scrolling="no" 
-                        marginheight="0" 
-                        marginwidth="0"
-                        src="https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lng}"
-                        style="border-radius: 8px;">
-                    </iframe>
-                    <div style="font-size: 11px; color: #999; margin-top: 8px;">
-                        <a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}" target="_blank" style="color: #667eea;">
-                            在 OpenStreetMap 中打开查看详细地图 →
+                <div style="position: relative;">
+                    <img src="${staticMapUrl}" 
+                         alt="地图预览" 
+                         style="width: 100%; height: auto; display: block; border-radius: 8px;"
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/600x300?text=地图加载失败+点击下方链接查看';">
+                    <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 0 0 8px 8px;">
+                        <a href="https://www.google.com/maps/@${lat},${lng},15z" 
+                           target="_blank" 
+                           style="color: #667eea; text-decoration: none; margin-right: 15px;">
+                            📍 谷歌地图
+                        </a>
+                        <a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}" 
+                           target="_blank" 
+                           style="color: #667eea; text-decoration: none; margin-right: 15px;">
+                            🗺️ OpenStreetMap
+                        </a>
+                        <a href="https://ditu.amap.com/regeo?lng=${lng}&lat=${lat}&src=mypage&coordinate=gaode&callnative=1" 
+                           target="_blank" 
+                           style="color: #667eea; text-decoration: none;">
+                            🗺️ 高德地图
                         </a>
                     </div>
                 </div>
@@ -310,7 +339,6 @@
             try {
                 showStatus('正在发送定位数据到后端...', 'info');
                 
-                // 准备发送的数据
                 const payload = {
                     latitude: locationData.latitude,
                     longitude: locationData.longitude,
@@ -319,13 +347,10 @@
                     timestamp: locationData.timestamp,
                     userAgent: navigator.userAgent,
                     pageUrl: window.location.href,
-                    // 可以添加更多信息
                     screenWidth: window.screen.width,
                     screenHeight: window.screen.height
                 };
                 
-                // 实际发送请求到后端
-                // 注意：由于跨域问题，实际部署时需要后端配置CORS
                 const response = await fetch(BACKEND_API, {
                     method: 'POST',
                     headers: {
@@ -338,15 +363,11 @@
                     const result = await response.json();
                     console.log('后端返回数据:', result);
                     showStatus('✅ 定位数据已成功发送到后端！', 'success');
-                    
-                    // 可以在控制台查看后端返回的详细信息
-                    console.log('后端响应详情:', result);
                 } else {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (error) {
                 console.error('发送到后端失败:', error);
-                // 如果是演示环境，显示提示信息
                 if (BACKEND_API.includes('jsonplaceholder')) {
                     showStatus('⚠️ 这是演示环境，数据未实际存储。如需真实后端，请修改 BACKEND_API 变量为你的后端地址。但请求已发送成功！', 'info');
                 } else {
@@ -357,30 +378,25 @@
         
         // 获取定位的主要函数
         function getLocation() {
-            // 检查浏览器是否支持定位API
             if (!navigator.geolocation) {
                 showStatus('❌ 您的浏览器不支持地理定位功能', 'error');
                 return;
             }
             
-            // 显示加载状态
             showStatus('<span class="loading"></span> 正在获取定位，请稍候...', 'info');
             
-            // 定位选项
             const options = {
-                enableHighAccuracy: true,  // 启用高精度模式（使用GPS）
-                timeout: 10000,            // 超时时间10秒
-                maximumAge: 0              // 不缓存位置，每次重新获取
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             };
             
-            // 成功获取定位的回调
             function successCallback(position) {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 const accuracy = position.coords.accuracy;
                 const timestamp = new Date(position.timestamp).toLocaleString('zh-CN');
                 
-                // 判断定位方式（根据精度简单判断）
                 let method = '未知';
                 if (accuracy < 50) {
                     method = 'GPS卫星定位（高精度）';
@@ -390,7 +406,6 @@
                     method = '基站定位（低精度）';
                 }
                 
-                // 保存定位信息
                 currentLocation = {
                     latitude: lat,
                     longitude: lng,
@@ -400,16 +415,11 @@
                     rawData: position
                 };
                 
-                // 更新页面显示
                 updateDisplay(currentLocation);
-                
-                // 发送到后端
                 sendLocationToBackend(currentLocation);
-                
                 showStatus(`✅ 定位成功！纬度: ${lat.toFixed(6)}, 经度: ${lng.toFixed(6)}`, 'success');
             }
             
-            // 获取定位失败的回调
             function errorCallback(error) {
                 let errorMessage = '';
                 switch(error.code) {
@@ -429,7 +439,6 @@
                 console.error('定位错误:', error);
             }
             
-            // 调用定位API
             navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options);
         }
         
@@ -442,8 +451,11 @@
             document.getElementById('method').textContent = '--';
             document.getElementById('timestamp').textContent = '--';
             document.getElementById('sendData').textContent = '等待获取定位...';
-            document.getElementById('mapContainer').innerHTML = '地图预览区域';
-            document.getElementById('mapContainer').className = 'map-placeholder';
+            document.getElementById('mapContainer').innerHTML = `
+                <div class="map-placeholder">
+                    🌍 获取定位后显示地图预览
+                </div>
+            `;
             document.getElementById('status').innerHTML = '';
             showStatus('已清除所有数据', 'info');
         }
@@ -456,7 +468,6 @@
                 showStatus('⚠️ 您的浏览器不支持地理定位功能', 'error');
             }
             
-            // 检查是否HTTPS（定位API需要HTTPS）
             if (location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
                 showStatus('⚠️ 当前页面不是HTTPS协议，定位功能可能无法正常工作。请使用HTTPS访问本页面。', 'info');
             }
@@ -466,13 +477,11 @@
         document.getElementById('getLocationBtn').addEventListener('click', getLocation);
         document.getElementById('clearBtn').addEventListener('click', clearData);
         
-        // 页面加载时检查支持情况
+        // 页面加载时检查
         checkSupport();
         
-        // 添加控制台输出说明
         console.log('=== 定位演示页面已加载 ===');
         console.log('后端API地址:', BACKEND_API);
-        console.log('提示：如需对接真实后端，请修改代码中的 BACKEND_API 变量');
     </script>
 </body>
 </html>
