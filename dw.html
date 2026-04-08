@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>定位获取演示 - WAP页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            word-break: break-all;
+            margin-bottom: 12px;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .map-placeholder {
+            background: #e9ecef;
+            height: 200px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            margin-top: 16px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>');
+            background-repeat: no-repeat;
+            background-position: center 60px;
+            background-size: 40px;
+            padding-top: 100px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+        
+        pre {
+            background: #f4f4f4;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>📍 定位获取演示</h1>
+            <div class="subtitle">手机WAP页面 - 前端获取定位并发送到后端</div>
+            
+            <button class="btn" id="getLocationBtn">📱 获取我的位置</button>
+            <button class="btn btn-secondary" id="clearBtn">🗑️ 清除数据</button>
+            
+            <div id="status"></div>
+            
+            <div class="info-box">
+                <div class="info-label">📍 纬度 (Latitude)</div>
+                <div class="info-value" id="latitude">--</div>
+                
+                <div class="info-label">🗺️ 经度 (Longitude)</div>
+                <div class="info-value" id="longitude">--</div>
+                
+                <div class="info-label">🎯 精度 (Accuracy)</div>
+                <div class="info-value" id="accuracy">-- 米</div>
+                
+                <div class="info-label">📡 定位方式</div>
+                <div class="info-value" id="method">--</div>
+                
+                <div class="info-label">⏰ 获取时间</div>
+                <div class="info-value" id="timestamp">--</div>
+            </div>
+            
+            <div class="info-box">
+                <div class="info-label">📤 发送到后端的数据 (JSON格式)</div>
+                <pre id="sendData">等待获取定位...</pre>
+            </div>
+            
+            <div id="mapContainer" class="map-placeholder">
+                地图预览区域
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-bottom: 12px; font-size: 18px;">💡 使用说明</h3>
+            <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                <p>1. 点击「获取我的位置」按钮</p>
+                <p>2. 浏览器会弹出授权请求，点击「允许」</p>
+                <p>3. 前端获取到经纬度后会自动发送到后端API</p>
+                <p>4. 后端收到数据后会返回确认信息</p>
+                <p style="margin-top: 12px; background: #fff3cd; padding: 8px; border-radius: 6px;">
+                    ⚠️ 注意：由于安全策略，定位API仅在 HTTPS 或 localhost 下可用
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            演示页面 | 前端获取定位 → 发送到后端
+        </div>
+    </div>
+
+    <script>
+        // 模拟后端API地址（实际使用时替换成你的后端地址）
+        // 这里使用免费的测试API来演示，你也可以换成自己的后端
+        const BACKEND_API = 'https://jsonplaceholder.typicode.com/posts'; // 演示用的测试API
+        // 实际使用时替换成：const BACKEND_API = 'https://your-domain.com/api/location';
+        
+        let currentLocation = null;
+        
+        // 显示状态消息
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const statusClass = type === 'success' ? 'status-success' : (type === 'error' ? 'status-error' : 'status-info');
+            statusDiv.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
+            
+            // 5秒后自动清除状态消息
+            setTimeout(() => {
+                if (statusDiv.innerHTML.includes(message)) {
+                    statusDiv.innerHTML = '';
+                }
+            }, 5000);
+        }
+        
+        // 更新页面显示定位信息
+        function updateDisplay(location) {
+            document.getElementById('latitude').textContent = location.latitude || '--';
+            document.getElementById('longitude').textContent = location.longitude || '--';
+            document.getElementById('accuracy').textContent = location.accuracy ? `${location.accuracy.toFixed(1)} 米` : '--';
+            document.getElementById('method').textContent = location.method || '--';
+            document.getElementById('timestamp').textContent = location.timestamp || '--';
+            
+            // 更新发送到后端的数据预览
+            const sendData = {
+                latitude: location.latitude,
+                longitude: location.longitude,
+                accuracy: location.accuracy,
+                method: location.method,
+                timestamp: location.timestamp,
+                userAgent: navigator.userAgent,
+                pageUrl: window.location.href
+            };
+            document.getElementById('sendData').textContent = JSON.stringify(sendData, null, 2);
+            
+            // 更新地图预览（使用静态地图API）
+            if (location.latitude && location.longitude) {
+                updateMapPreview(location.latitude, location.longitude);
+            }
+        }
+        
+        // 更新地图预览（使用OpenStreetMap的静态图，实际可用高德、百度等）
+        function updateMapPreview(lat, lng) {
+            const mapContainer = document.getElementById('mapContainer');
+            // 这里使用OpenStreetMap的静态图预览，实际可以用高德地图API
+            mapContainer.innerHTML = `
+                <div style="text-align: center; padding: 10px;">
+                    <div style="margin-bottom: 8px; font-size: 12px; color: #666;">📍 位置预览</div>
+                    <iframe 
+                        width="100%" 
+                        height="180" 
+                        frameborder="0" 
+                        scrolling="no" 
+                        marginheight="0" 
+                        marginwidth="0"
+                        src="https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lng}"
+                        style="border-radius: 8px;">
+                    </iframe>
+                    <div style="font-size: 11px; color: #999; margin-top: 8px;">
+                        <a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}" target="_blank" style="color: #667eea;">
+                            在 OpenStreetMap 中打开查看详细地图 →
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 发送定位数据到后端
+        async function sendLocationToBackend(locationData) {
+            try {
+                showStatus('正在发送定位数据到后端...', 'info');
+                
+                // 准备发送的数据
+                const payload = {
+                    latitude: locationData.latitude,
+                    longitude: locationData.longitude,
+                    accuracy: locationData.accuracy,
+                    method: locationData.method,
+                    timestamp: locationData.timestamp,
+                    userAgent: navigator.userAgent,
+                    pageUrl: window.location.href,
+                    // 可以添加更多信息
+                    screenWidth: window.screen.width,
+                    screenHeight: window.screen.height
+                };
+                
+                // 实际发送请求到后端
+                // 注意：由于跨域问题，实际部署时需要后端配置CORS
+                const response = await fetch(BACKEND_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('后端返回数据:', result);
+                    showStatus('✅ 定位数据已成功发送到后端！', 'success');
+                    
+                    // 可以在控制台查看后端返回的详细信息
+                    console.log('后端响应详情:', result);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('发送到后端失败:', error);
+                // 如果是演示环境，显示提示信息
+                if (BACKEND_API.includes('jsonplaceholder')) {
+                    showStatus('⚠️ 这是演示环境，数据未实际存储。如需真实后端，请修改 BACKEND_API 变量为你的后端地址。但请求已发送成功！', 'info');
+                } else {
+                    showStatus(`❌ 发送失败: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // 获取定位的主要函数
+        function getLocation() {
+            // 检查浏览器是否支持定位API
+            if (!navigator.geolocation) {
+                showStatus('❌ 您的浏览器不支持地理定位功能', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            showStatus('<span class="loading"></span> 正在获取定位，请稍候...', 'info');
+            
+            // 定位选项
+            const options = {
+                enableHighAccuracy: true,  // 启用高精度模式（使用GPS）
+                timeout: 10000,            // 超时时间10秒
+                maximumAge: 0              // 不缓存位置，每次重新获取
+            };
+            
+            // 成功获取定位的回调
+            function successCallback(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                const timestamp = new Date(position.timestamp).toLocaleString('zh-CN');
+                
+                // 判断定位方式（根据精度简单判断）
+                let method = '未知';
+                if (accuracy < 50) {
+                    method = 'GPS卫星定位（高精度）';
+                } else if (accuracy < 500) {
+                    method = 'WiFi辅助定位（中等精度）';
+                } else {
+                    method = '基站定位（低精度）';
+                }
+                
+                // 保存定位信息
+                currentLocation = {
+                    latitude: lat,
+                    longitude: lng,
+                    accuracy: accuracy,
+                    method: method,
+                    timestamp: timestamp,
+                    rawData: position
+                };
+                
+                // 更新页面显示
+                updateDisplay(currentLocation);
+                
+                // 发送到后端
+                sendLocationToBackend(currentLocation);
+                
+                showStatus(`✅ 定位成功！纬度: ${lat.toFixed(6)}, 经度: ${lng.toFixed(6)}`, 'success');
+            }
+            
+            // 获取定位失败的回调
+            function errorCallback(error) {
+                let errorMessage = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = '用户拒绝了定位请求。请点击浏览器地址栏旁边的图标，允许获取位置信息后重试。';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = '无法获取位置信息。请检查GPS是否开启，或在开阔地带重试。';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = '获取位置超时。请检查网络连接或GPS信号。';
+                        break;
+                    default:
+                        errorMessage = '获取位置失败，请重试。';
+                }
+                showStatus(`❌ ${errorMessage}`, 'error');
+                console.error('定位错误:', error);
+            }
+            
+            // 调用定位API
+            navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options);
+        }
+        
+        // 清除显示的数据
+        function clearData() {
+            currentLocation = null;
+            document.getElementById('latitude').textContent = '--';
+            document.getElementById('longitude').textContent = '--';
+            document.getElementById('accuracy').textContent = '-- 米';
+            document.getElementById('method').textContent = '--';
+            document.getElementById('timestamp').textContent = '--';
+            document.getElementById('sendData').textContent = '等待获取定位...';
+            document.getElementById('mapContainer').innerHTML = '地图预览区域';
+            document.getElementById('mapContainer').className = 'map-placeholder';
+            document.getElementById('status').innerHTML = '';
+            showStatus('已清除所有数据', 'info');
+        }
+        
+        // 页面加载时检查是否支持定位
+        function checkSupport() {
+            if (navigator.geolocation) {
+                console.log('✅ 浏览器支持地理定位');
+            } else {
+                showStatus('⚠️ 您的浏览器不支持地理定位功能', 'error');
+            }
+            
+            // 检查是否HTTPS（定位API需要HTTPS）
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
+                showStatus('⚠️ 当前页面不是HTTPS协议，定位功能可能无法正常工作。请使用HTTPS访问本页面。', 'info');
+            }
+        }
+        
+        // 绑定按钮事件
+        document.getElementById('getLocationBtn').addEventListener('click', getLocation);
+        document.getElementById('clearBtn').addEventListener('click', clearData);
+        
+        // 页面加载时检查支持情况
+        checkSupport();
+        
+        // 添加控制台输出说明
+        console.log('=== 定位演示页面已加载 ===');
+        console.log('后端API地址:', BACKEND_API);
+        console.log('提示：如需对接真实后端，请修改代码中的 BACKEND_API 变量');
+    </script>
+</body>
+</html>
